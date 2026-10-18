@@ -4,7 +4,7 @@
   const APP_VERSION = '0.9.0';
   const STORAGE_KEY = 'northstar.products.variant5.v1';
   const DEMO_PRODUCTS = [
-    { id: 'SKU-001', name: 'Органайзер Acacia', description: 'Настільний органайзер із натурального дерева.', price: 29.9, dateAdded: '2026-10-01', stock: 1 },
+    { id: 'SKU-001', name: 'Органайзер Acacia', description: 'Настільний органайзер із натурального дерева.', price: 29.9, dateAdded: '2026-10-01',[...]
     { id: 'SKU-002', name: 'Термос Travel', description: 'Термос із нержавної сталі, об’єм 500 мл.', price: 10, dateAdded: '2026-10-02', stock: 1 },
     { id: 'SKU-003', name: 'Сумка Cotton', description: 'Бавовняна торба для щоденних покупок.', price: 100, dateAdded: '2026-10-03', stock: 1 },
     { id: 'SKU-004', name: 'Чашка Stoneware', description: 'Керамічна чашка ручної роботи.', price: 9.5, dateAdded: '2026-10-04', stock: 0 },
@@ -84,10 +84,10 @@
     const errors = {};
     if (!value.id) errors.id = 'Вкажіть ID товару.';
     else if (value.id.length > 40) errors.id = 'ID має містити не більше 40 символів.';
-    else if (products.some((item) => item.id.toLocaleLowerCase('uk-UA') === value.id.toLocaleLowerCase('uk-UA') && item.id !== excludeId)) errors.id = 'Товар із таким ID уже існує.';
+    else if (products.some((item) => item.id.toLocaleLowerCase('uk-UA') === value.id.toLocaleLowerCase('uk-UA') && item.id !== excludeId)) errors.id = 'Товар із таким ID уже існ�[...]
     if (!value.name) errors.name = 'Вкажіть назву товару.';
     if (!value.priceText) errors.price = 'Вкажіть ціну товару.';
-    else if (!/^(?:\d+|\d*[.]\d+)$/.test(value.priceText) || !Number.isFinite(Number(value.priceText)) || Number(value.priceText) < 0) errors.price = 'Ціна має бути невід’ємним числом.';
+    else if (!/^(?:\d+|\d*[.]\d+)$/.test(value.priceText) || !Number.isFinite(Number(value.priceText)) || Number(value.priceText) < 0) errors.price = 'Ціна має бути невід’ємн�[...]
     if (!value.dateAdded) errors.dateAdded = 'Вкажіть дату додавання.';
     else if (!isValidDate(value.dateAdded)) errors.dateAdded = 'Вкажіть коректну дату.';
     if (value.stock !== '0' && value.stock !== '1') errors.stock = 'Оберіть стан наявності.';
@@ -105,9 +105,13 @@
     if (!field) return cloneProducts(items);
     const sign = direction === 'descending' ? -1 : 1;
     return cloneProducts(items).sort((a, b) => {
-      const comparison = field === 'price'
-        ? String(a.price).localeCompare(String(b.price), 'uk-UA')
-        : collator.compare(String(a[field] ?? ''), String(b[field] ?? ''));
+      if (field === 'price') {
+        const pa = Number(a.price);
+        const pb = Number(b.price);
+        if (pa !== pb) return (pa < pb ? -1 : 1) * sign;
+        return collator.compare(a.id, b.id);
+      }
+      const comparison = collator.compare(String(a[field] ?? ''), String(b[field] ?? ''));
       if (comparison !== 0) return sign * comparison;
       return collator.compare(a.id, b.id);
     });
@@ -150,7 +154,7 @@
   }
 
   function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+    return String(value).replace(/[&<>\"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
   }
 
   function formatPrice(value) {
@@ -184,14 +188,14 @@
     tbody.hidden = totalEmpty || visible.length === 0;
     tbody.innerHTML = visible.map((item, index) => `
       <tr data-row-id="${escapeHtml(item.id)}">
-        <td class="check-col"><input class="row-check" type="checkbox" data-select-id="${escapeHtml(item.id)}" aria-label="Вибрати ${escapeHtml(item.name)}" ${selectedIds.has(item.id) ? 'checked' : ''}></td>
+        <td class="check-col"><input class="row-check" type="checkbox" data-select-id="${escapeHtml(item.id)}" aria-label="Вибрати ${escapeHtml(item.name)}" ${selectedIds.has(item.id) ? 'c[...]
         <td><span class="product-id">${escapeHtml(item.id)}</span></td>
         <td><span class="product-name"><span class="product-icon ${iconTone(index)}" aria-hidden="true">${['◈','◌','◉','▤'][index % 4]}</span>${escapeHtml(item.name)}</span></td>
         <td><span class="description-text" title="${escapeHtml(item.description)}">${escapeHtml(item.description || '—')}</span></td>
         <td class="price-cell">₴ ${formatPrice(item.price)}</td>
         <td class="date-cell">${escapeHtml(formatDate(item.dateAdded))}</td>
         <td><span class="stock-badge ${item.stock ? 'in-stock' : 'out-stock'}">${item.stock ? 'Є в наявності' : 'Немає'}</span></td>
-        <td class="actions-col"><div class="row-actions"><button class="row-action" type="button" data-action="edit" data-id="${escapeHtml(item.id)}" aria-label="Редагувати ${escapeHtml(item.name)}" title="Редагувати">✎</button><button class="row-action delete" type="button" data-action="delete" data-id="${escapeHtml(item.id)}" aria-label="Видалити ${escapeHtml(item.name)}" title="Видалити">⌫</button></div></td>
+        <td class="actions-col"><div class="row-actions"><button class="row-action" type="button" data-action="edit" data-id="${escapeHtml(item.id)}" aria-label="Редагувати ${escapeHtml[...]
       </tr>`).join('');
     byId('nav-count').textContent = products.length;
     byId('stat-total').textContent = products.length;
