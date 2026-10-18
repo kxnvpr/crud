@@ -84,10 +84,10 @@
     const errors = {};
     if (!value.id) errors.id = 'Вкажіть ID товару.';
     else if (value.id.length > 40) errors.id = 'ID має містити не більше 40 символів.';
-    else if (products.some((item) => item.id.toLocaleLowerCase('uk-UA') === value.id.toLocaleLowerCase('uk-UA') && item.id !== excludeId)) errors.id = 'Товар із таким ID уже існує.';
+    else if (products.some((item) => item.id.toLocaleLowerCase('uk-UA') === value.id.toLocaleLowerCase('uk-UA') && item.id !== excludeId)) errors.id = 'Товар із таким ID уже існ�...';
     if (!value.name) errors.name = 'Вкажіть назву товару.';
     if (!value.priceText) errors.price = 'Вкажіть ціну товару.';
-    else if (!/^(?:\d+|\d*[.]\d+)$/.test(value.priceText) || !Number.isFinite(Number(value.priceText)) || Number(value.priceText) < 0) errors.price = 'Ціна має бути невід’ємним числом.';
+    else if (!/^(?:\d+|\d*[.]\d+)$/.test(value.priceText) || !Number.isFinite(Number(value.priceText)) || Number(value.priceText) < 0) errors.price = 'Ціна має бути невід’ємн�...';
     if (!value.dateAdded) errors.dateAdded = 'Вкажіть дату додавання.';
     else if (!isValidDate(value.dateAdded)) errors.dateAdded = 'Вкажіть коректну дату.';
     if (value.stock !== '0' && value.stock !== '1') errors.stock = 'Оберіть стан наявності.';
@@ -105,11 +105,13 @@
     if (!field) return cloneProducts(items);
     const sign = direction === 'descending' ? -1 : 1;
     return cloneProducts(items).sort((a, b) => {
+      // Для поля price порівнюємо значення як числа (щоб уникнути сортування як рядків).
       const comparison = field === 'price'
         ? Number(a.price) - Number(b.price)
         : collator.compare(String(a[field] ?? ''), String(b[field] ?? ''));
       if (comparison !== 0) return sign * comparison;
-      return collator.compare(a.id, b.id);
+      // Якщо значення однакові — впорядковуємо за ID для детермінованого результату.
+      return collator.compare(String(a.id), String(b.id));
     });
   }
 
@@ -150,7 +152,7 @@
   }
 
   function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+    return String(value).replace(/[&<>\"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
   }
 
   function formatPrice(value) {
@@ -191,7 +193,7 @@
         <td class="price-cell">₴ ${formatPrice(item.price)}</td>
         <td class="date-cell">${escapeHtml(formatDate(item.dateAdded))}</td>
         <td><span class="stock-badge ${item.stock ? 'in-stock' : 'out-stock'}">${item.stock ? 'Є в наявності' : 'Немає'}</span></td>
-        <td class="actions-col"><div class="row-actions"><button class="row-action" type="button" data-action="edit" data-id="${escapeHtml(item.id)}" aria-label="Редагувати ${escapeHtml(item.name)}" title="Редагувати">✎</button><button class="row-action delete" type="button" data-action="delete" data-id="${escapeHtml(item.id)}" aria-label="Видалити ${escapeHtml(item.name)}" title="Видалити">⌫</button></div></td>
+        <td class="actions-col"><div class="row-actions"><button class="row-action" type="button" data-action="edit" data-id="${escapeHtml(item.id)}" aria-label="Редагувати ${escapeHtml(item.name)}">Редагувати</button> <button class="row-action" type="button" data-action="delete" data-id="${escapeHtml(item.id)}" aria-label="Видалити ${escapeHtml(item.name)}">Видалити</button></div></td>
       </tr>`).join('');
     byId('nav-count').textContent = products.length;
     byId('stat-total').textContent = products.length;
